@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Joel Helbling"]
   spec.email         = ["joel@joelhelbling.com"]
   spec.summary       = %q{Lightweight ORM backed by any hash-like storage. [*]}
-  spec.description   = %q{Redis, LevelDB or plain old hashes --any form of hash-like storage can be used to back Squares.}
+  spec.description   = %q{[*] Lightweight ORM backed by any hash-like storage: Redis, LevelDB or plain old hashes.}
   spec.homepage      = "http://github.com/joelhelbling/squares"
   spec.license       = "MIT"
 
