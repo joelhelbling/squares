@@ -28,6 +28,12 @@ module Squares
         Then { test_class.underscore_name == 'marvel/super_hero'                                    }
       end
 
+      describe '.delete' do
+        Given { hero.save }
+        When { Marvel::SuperHero.delete id }
+        Then { expect(storage).to_not be_member(id) }
+      end
+
       describe '.properties' do
         Then { test_class.properties == [:real_name, :special_powers]                               }
       end

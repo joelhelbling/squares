@@ -74,6 +74,10 @@ module Squares
       alias_method :member?,   :has_key?
       alias_method :includes?, :has_key?
 
+      def delete id
+        store.delete id
+      end
+
       def each &block
         store.values.map{ |i| Marshal.restore i }.each &block
       end
