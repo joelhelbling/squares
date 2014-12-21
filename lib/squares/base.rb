@@ -132,10 +132,19 @@ module Squares
         end
       end
 
+      def models
+        @_models.uniq.sort
+      end
+
       private
 
       def uniquify_properties
         @_properties = @_properties.uniq.compact
+      end
+
+      def inherited(subclass)
+        @_models ||= []
+        @_models << subclass
       end
 
     end

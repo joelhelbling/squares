@@ -38,6 +38,11 @@ module Squares
         Then            { test_class.store == storage                                               }
       end
 
+      describe '.models lists defined models (inheritors)' do
+        When(:result) { described_class.models }
+        Then { result == [ Marvel::SuperHero, Marvel::Villain ] }
+      end
+
       describe '.[]' do
         Given { storage[id] = Marshal.dump hero                                                     }
         When(:recovered_hero) { Marvel::SuperHero['Captain America']                                }

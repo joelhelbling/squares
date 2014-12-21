@@ -65,15 +65,7 @@ people_storage = Redis::Namespace.new(
 Person.store = people_storage
 ```
 
-Or setup a bunch of 'em like this:
-
-```ruby
-[Person, Place, Thing].each do |model|
-  model.store = LevelDB::DB.new("./tmp/#{model.underscore_name}")
-end
-```
-
-...or if you just want to use a plain ole in-memory hash:
+Or if you just want to use a plain ole in-memory hash:
 
 ```ruby
 tom_sellecks_mustache = {}
@@ -83,6 +75,29 @@ Soup.store = tom_sellecks_mustache
 Squares actually defaults the store to an empty hash, which means if you're ok
 with in-memory, transient storage (e.g. when writing tests, etc.) you don't have
 to do any config-- er, bootstrapping `;)` at all!
+
+You can setup a bunch of 'em like this:
+
+```ruby
+[Person, Place, SwampThing].each do |model|
+  model.store = LevelDB::DB.new("./tmp/#{model.underscore_name}")
+end
+```
+
+But it gets even better: the Squares module is an `Enumerable` which enumerates all
+the model classes (inheritors of `Squares::Base`).  So you can:
+
+```ruby
+Squares.map &:underscore_name #=> ['person', 'place', 'swamp_thing']
+```
+
+Or better yet:
+
+```ruby
+Squares.each do |model|
+  model.store = LevelDB::DB.new './tmp/#{model.underscore_name}'
+end
+```
 
 ### Onward To The Fun
 
