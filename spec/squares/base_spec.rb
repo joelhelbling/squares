@@ -88,6 +88,11 @@ module Squares
         context 'but creating with an invalid object' do
           Then { expect{ test_class[id] = 12 } .to raise_error(ArgumentError)                       }
         end
+
+        context '.create alias returns the new object' do
+          When(:result) { test_class.create id, real_name: name, special_powers: powers             }
+          Then { expect(result).to be_kind_of(Marvel::SuperHero)                                    }
+        end
       end
 
       describe '.has_key?' do

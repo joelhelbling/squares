@@ -55,15 +55,15 @@ module Squares
         id, instance = *args
         if instance.class == self
           instance.id = id
-          instance.save
         elsif instance.respond_to?(:to_h)
-          self.new(id, instance).save
+          instance = self.new(id, instance)
         else
           raise ArgumentError.new(<<-ERR)
           You must provide an instance of #{self.name} or at least
           something which responds to #to_h"
           ERR
         end
+        instance.tap { |i| i.save }
       end
       alias_method :create, :[]=
 
