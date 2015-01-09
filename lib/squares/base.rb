@@ -74,6 +74,14 @@ module Squares
       alias_method :member?,   :has_key?
       alias_method :includes?, :has_key?
 
+      def keys
+        store.keys
+      end
+
+      def values
+        store.values
+      end
+
       def delete id
         store.delete id
       end
