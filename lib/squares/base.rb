@@ -79,7 +79,7 @@ module Squares
       end
 
       def values
-        store.values
+        store.values.map{ |i| Marshal.restore i }
       end
 
       def delete id
@@ -87,7 +87,7 @@ module Squares
       end
 
       def each &block
-        store.values.map{ |i| Marshal.restore i }.each &block
+        values.each &block
       end
       alias_method :where, :select
 
