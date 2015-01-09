@@ -19,6 +19,14 @@ module Squares
       self.class.properties
     end
 
+    def to_h(key_name = :id)
+      h = { key_name => id }
+      properties.each do |property|
+        h[property] = self.send(property)
+      end
+      h
+    end
+
     private
 
     def properties_equal other

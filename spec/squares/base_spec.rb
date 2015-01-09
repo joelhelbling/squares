@@ -138,6 +138,21 @@ module Squares
         Then { frozen_hero.class     == Marvel::SuperHero }
       end
 
+      describe '#to_h' do
+        Given(:hero1) { test_class.new id, real_name: name, special_powers: powers }
+        context 'default key name' do
+          Given(:expected_hash) { { id: id, real_name: name, special_powers: powers } }
+          When(:result) { hero1.to_h }
+          Then { expect(result).to eq(expected_hash) }
+        end
+
+        context 'custom key name' do
+          Given(:expected_hash) { { hero: id, real_name: name, special_powers: powers } }
+          When(:result) { hero1.to_h(:hero) }
+          Then { expect(result).to eq(expected_hash) }
+        end
+      end
+
       describe '#==' do
         Given(:hero1) { test_class.new id, real_name: name, special_powers: powers }
         Given(:hero2) { test_class.new id, real_name: name, special_powers: powers }
