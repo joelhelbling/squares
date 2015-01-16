@@ -191,5 +191,10 @@ module Squares
       Then { expect(villain).to respond_to(:really_evil=) }
       Then { expect(villain).to be_really_evil }
     end
+
+    describe 'question? properties' do
+      When(:villain) { Marvel::Villain.new 'Lizard Man', really_evil?: false }
+      Then { expect(villain).to_not be_really_evil }
+    end
   end
 end

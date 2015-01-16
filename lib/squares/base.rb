@@ -36,12 +36,16 @@ module Squares
     end
 
     def apply *args
-      @id, value_hash = *args
+      @id, values = *args
+      value_hash = values.to_h
       self.class.properties.each do |property|
-        value = args.last.to_h[property] || self.class.defaults[property]
-        # self.class.method_for(property)
+        value = value_hash.has_key?(property) ? value_hash[property] : default_for(property)
         self.send "#{property.to_s.gsub(/\?$/,'')}=".to_sym, value
       end
+    end
+
+    def default_for property
+      self.class.defaults[property]
     end
 
     def store
