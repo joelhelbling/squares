@@ -23,6 +23,14 @@ module Squares
       set_property key, value
     end
 
+    def update_properties new_properties
+      new_properties.each do |key, value|
+        self[key] = value if valid_property?(key)
+      end
+      save
+    end
+    alias_method :update_attributes, :update_properties
+
     def properties
       self.class.properties
     end

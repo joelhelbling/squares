@@ -222,6 +222,39 @@ module Squares
         end
       end
 
+      describe '#update_properties' do
+        Given(:villain) { Marvel::Villain.create 'Dr. Doom', vehicle: 'jet', lair: 'Latveria', really_evil?: false }
+        Given(:new_properties) { { vehicle: 'train', hairstyle: 'bald' } }
+        When { villain.update_properties new_properties }
+
+        describe 'un-updated properties stay the same' do
+          Then { expect(villain.lair).to eq('Latveria') }
+        end
+
+        describe 'updated properties are changed' do
+          Then { expect(villain.vehicle).to eq('train') }
+        end
+
+        describe 'invalid properties do nothing' do
+          Then { expect(villain.instance_variable_get("@hairstyle")).to be_nil }
+        end
+
+        describe 'boolean properties' do
+          context 'where key ends in "?"' do
+            Given { new_properties[:really_evil?] = true }
+            Then  { expect(villain).to be_really_evil }
+          end
+          context 'where key does not end with "?"' do
+            Given { new_properties[:really_evil] = true }
+            Then  { expect(villain).to be_really_evil }
+          end
+        end
+
+        describe 'writes changes to the data store' do
+          Then { expect(Marvel::Villain.find('Dr. Doom').vehicle).to eq('train') }
+        end
+      end
+
       describe 'default values' do
         Given do
           class Marvel::SuperHero < Squares::Base
