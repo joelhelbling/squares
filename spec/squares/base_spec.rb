@@ -22,7 +22,7 @@ module Squares
     Given(:powers)     { ['super strength', 'strategy', 'leadership'] }
     When(:hero)        { test_class.new id, real_name: name, special_powers: powers }
 
-    describe 'class' do
+    describe 'class methods' do
 
       describe '.underscore_name' do
         Then { test_class.underscore_name == 'marvel/super_hero' }
@@ -50,7 +50,7 @@ module Squares
       end
 
       describe '.[]' do
-        Given { storage[id] = Marshal.dump hero }
+        Given                 { storage[id] = Marshal.dump hero }
         When(:recovered_hero) { Marvel::SuperHero['Captain America'] }
         Then                  { recovered_hero.class     == Marvel::SuperHero }
         Then                  { recovered_hero.id        == 'Captain America' }
@@ -123,11 +123,25 @@ module Squares
 
     end
 
-    describe 'instances' do
+    describe 'instance methods' do
       describe '#{{property}}' do
         Then { hero.id             == id }
         Then { hero.real_name      == name }
         Then { hero.special_powers == powers }
+      end
+
+      describe '#{{boolean}}?' do
+        When(:villain) { Marvel::Villain.new 'Lizard Man', really_evil?: false }
+        describe 'has an accessor (ends with "?")' do
+          Then { expect(villain).to respond_to(:really_evil?) }
+          Then { expect(villain).to_not be_really_evil }
+        end
+
+        describe 'also has a setter (ends with "=")' do
+          Then { expect(villain).to respond_to(:really_evil=) }
+          When { villain.really_evil = true }
+          Then { expect(villain).to be_really_evil }
+        end
       end
 
       describe '#save' do
@@ -167,6 +181,47 @@ module Squares
         end
       end
 
+      describe '#[]' do
+        context 'valid key' do
+          Then { expect(hero[:real_name]).to eq(name) }
+        end
+
+        context 'key which is not a property' do
+          Then { expect(hero[:insurance_company]).to be_nil }
+        end
+
+        context 'boolean properties' do
+          When(:villain) { Marvel::Villain.new 'Lizard Man', really_evil?: true }
+          Then { expect(villain[:really_evil?]).to eq(true) }
+          Then { expect(villain[:really_evil]).to eq(true) }
+        end
+      end
+
+      describe '#[]=' do
+        context 'valid property' do
+          When { hero[:real_name] = 'Bruce Banner' }
+          Then { expect(hero.real_name).to eq('Bruce Banner') }
+        end
+
+        context 'key which is not a property' do
+          Then { expect { hero[:ip_address] = '127.0.0.1' }.to raise_error(ArgumentError) }
+        end
+
+        context 'boolean properties' do
+          When(:villain) { Marvel::Villain.new 'Lizard Man', really_evil?: false }
+
+          describe 'can be set using the symbol ending in "?"' do
+            When { villain[:really_evil?] = true }
+            Then { expect(villain).to be_really_evil }
+          end
+
+          describe 'can also be set using the variant without the "?"' do
+            When { villain[:really_evil] = true }
+            Then { expect(villain).to be_really_evil }
+          end
+        end
+      end
+
       describe 'default values' do
         Given do
           class Marvel::SuperHero < Squares::Base
@@ -174,6 +229,7 @@ module Squares
           end
         end
         When(:hero) { test_class.new id, real_name: name }
+
         Then { hero.special_powers == nil }
         Then { hero.hair_color == 'black' }
         Then { Marvel::SuperHero.defaults == { hair_color: 'black' } }
@@ -181,20 +237,17 @@ module Squares
 
     end
 
-    describe "models' properties don't bleed into each other" do
+    describe 'instance properties' do
       When(:villain) { Marvel::Villain.new 'Dr. Octopus', vehicle: 'jets', lair: 'abandonned sewer' }
-      Then { villain.class              == Marvel::Villain }
-      Then { Marvel::Villain.properties == [:vehicle, :lair, :really_evil?] }
-      Then { villain.properties         == [:vehicle, :lair, :really_evil?] }
-      Then { expect(villain).to_not respond_to(:hair_color) }
-      Then { expect(villain).to respond_to(:really_evil?) }
-      Then { expect(villain).to respond_to(:really_evil=) }
-      Then { expect(villain).to be_really_evil }
+
+      describe "are the same as the Model's properties" do
+        Then { villain.properties == Marvel::Villain.properties }
+      end
+
+      describe "don't bleed into other types" do
+        Then { expect(villain).to_not respond_to(:real_name) }
+      end
     end
 
-    describe 'question? properties' do
-      When(:villain) { Marvel::Villain.new 'Lizard Man', really_evil?: false }
-      Then { expect(villain).to_not be_really_evil }
-    end
   end
 end

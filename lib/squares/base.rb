@@ -15,6 +15,14 @@ module Squares
       @id == other.id && properties_equal(other)
     end
 
+    def [](key)
+      get_property key
+    end
+
+    def []=(key, value)
+      set_property key, value
+    end
+
     def properties
       self.class.properties
     end
@@ -25,6 +33,10 @@ module Squares
         h[property] = self.send(property)
       end
       h
+    end
+
+    def valid_property? property
+      !!normalize_property(property)
     end
 
     private
@@ -46,6 +58,33 @@ module Squares
 
     def default_for property
       self.class.defaults[property]
+    end
+
+    def get_property property
+      instance_variable_get "@#{instance_var_string_for property}"
+    end
+
+    def set_property property, value
+      unless valid_property?(property)
+        raise ArgumentError.new("\"#{property}\" is not a valid property!")
+      end
+      instance_variable_set "@#{instance_var_string_for property}", value
+    end
+
+    def normalize_property property
+      unless properties.include?(property)
+        property = "#{property}?".to_sym if properties.include?("#{property}?".to_sym)
+      end
+      properties.include?(property) && property
+    end
+
+    def instance_var_string_for property
+      property = normalize_property property
+      if property.to_s.match(/\?$/)
+        "#{property.to_s.gsub(/\?$/,'')}__question__".to_sym
+      else
+        property
+      end
     end
 
     def store
@@ -109,10 +148,10 @@ module Squares
         uniquify_properties
         if prop.to_s.match(/\?$/)
           define_method prop do
-            instance_variable_get "@#{self.class.instance_var_for prop}"
+            get_property prop
           end
           define_method prop.to_s.gsub(/\?$/, '=') do |v|
-            instance_variable_set "@#{self.class.instance_var_for prop}", v
+            set_property prop, v
           end
         else
           attr_accessor prop
@@ -146,14 +185,6 @@ module Squares
 
       def store
         @store ||= {}
-      end
-
-      def instance_var_for property
-        if property.to_s.match(/\?$/)
-          "#{property.to_s.gsub(/\?$/,'')}__question__".to_sym
-        else
-          property
-        end
       end
 
       def models
