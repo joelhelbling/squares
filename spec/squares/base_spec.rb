@@ -255,6 +255,31 @@ module Squares
         end
       end
 
+      describe '#changed?' do
+        Given(:hero) { test_class.new id, real_name: name, special_powers: powers }
+        context 'new, unsaved' do
+          Then { expect(hero).to be_changed }
+        end
+        context 'after save' do
+          When { hero.save }
+          Then { expect(hero).to_not be_changed }
+        end
+        context 'freshly retrieved from storage' do
+          Given { hero.save }
+          When(:found_hero) { test_class.find id }
+          Then { expect(found_hero).to_not be_changed }
+        end
+        context 'unchanged, but then modified' do
+          Given { hero.save }
+          When  { hero.real_name = 'Fred Flintstone' }
+          Then { expect(hero).to be_changed }
+        end
+        context 'after create' do
+          Given(:made_hero) { test_class.create 'Iron Man', real_name: 'Tony Stark', special_powers: ['snark'] }
+          Then { expect(made_hero).to_not be_changed }
+        end
+      end
+
       describe 'default values' do
         Given do
           class Marvel::SuperHero < Squares::Base

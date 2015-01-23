@@ -7,6 +7,7 @@ module Squares
     end
 
     def save
+      @_changed = false
       store[@id] = Marshal.dump self
       nil
     end
@@ -30,6 +31,10 @@ module Squares
       save
     end
     alias_method :update_attributes, :update_properties
+
+    def changed?
+      @_changed
+    end
 
     def properties
       self.class.properties
@@ -57,10 +62,10 @@ module Squares
 
     def apply *args
       @id, values = *args
-      value_hash = values.to_h
+      values_hash = values.to_h
       self.class.properties.each do |property|
-        value = value_hash.has_key?(property) ? value_hash[property] : default_for(property)
-        self.send "#{property.to_s.gsub(/\?$/,'')}=".to_sym, value
+        value = values_hash.has_key?(property) ? values_hash[property] : default_for(property)
+        set_property property, value
       end
     end
 
@@ -76,7 +81,9 @@ module Squares
       unless valid_property?(property)
         raise ArgumentError.new("\"#{property}\" is not a valid property!")
       end
-      instance_variable_set "@#{instance_var_string_for property}", value
+      instance_variable_set("@#{instance_var_string_for property}", value).tap do |value|
+        @_changed = true
+      end
     end
 
     def normalize_property property
@@ -150,19 +157,15 @@ module Squares
       end
       alias_method :where, :select
 
-      def property prop, opts
+      def property prop, opts={}
         @_properties ||= []
         @_properties << prop
         uniquify_properties
-        if prop.to_s.match(/\?$/)
-          define_method prop do
-            get_property prop
-          end
-          define_method prop.to_s.gsub(/\?$/, '=') do |v|
-            set_property prop, v
-          end
-        else
-          attr_accessor prop
+        define_method prop do
+          get_property prop
+        end
+        define_method "#{prop.to_s.gsub(/\?$/, '')}=" do |v|
+          set_property prop, v
         end
         if default = opts[:default]
           defaults[prop] = default
