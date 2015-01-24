@@ -12,6 +12,11 @@ module Squares
       nil
     end
 
+    def delete
+      self.class.delete self.id
+    end
+    alias_method :destroy, :delete
+
     def == other
       @id == other.id && properties_equal(other)
     end

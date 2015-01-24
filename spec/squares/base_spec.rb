@@ -39,7 +39,7 @@ module Squares
         Then { test_class.properties == [:real_name, :special_powers, :caped?] }
       end
 
-      describe '.use_storage' do
+      describe '.storage' do
         Given(:storage) { {attack: :fwoosh } }
         When            { test_class.store = storage }
         Then            { test_class.store == storage }
@@ -191,6 +191,12 @@ module Squares
         Then { storage.keys.first    == 'Captain America' }
         Then { frozen_hero.real_name == 'Steve Rogers' }
         Then { frozen_hero.class     == Marvel::SuperHero }
+      end
+
+      describe '#delete' do
+        Given(:villain) { Marvel::Villain.create 'Lizard Man', lair: 'lab' }
+        When { villain.delete }
+        Then { expect(Marvel::Villain[villain.id]).to be_nil }
       end
 
       describe '#to_h' do
