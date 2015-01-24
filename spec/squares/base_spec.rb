@@ -4,6 +4,7 @@ require 'squares/base'
 module Marvel
   class SuperHero < Squares::Base
     properties :real_name, :special_powers
+    property :caped?, default: false
   end
   class Villain < Squares::Base
     properties :vehicle, :lair
@@ -35,7 +36,7 @@ module Squares
       end
 
       describe '.properties' do
-        Then { test_class.properties == [:real_name, :special_powers] }
+        Then { test_class.properties == [:real_name, :special_powers, :caped?] }
       end
 
       describe '.use_storage' do
@@ -103,7 +104,7 @@ module Squares
         Then  { expect(test_class).to be_includes(id) }
       end
 
-      describe 'more cool stuff' do
+      describe 'enumerable collections' do
         Given do
           Marvel::SuperHero['Superman'] = { real_name: 'Clark Kent',   special_powers: ['flying'] }
           Marvel::SuperHero['Hulk']     = { real_name: 'Bruce Banner', special_powers: ['smash'] }
@@ -111,8 +112,48 @@ module Squares
         end
 
         describe '.where' do
-          When(:result) { Marvel::SuperHero.where { |h| h.real_name =~ /^Bruce/ } }
-          Then { result.count == 2 }
+          describe 'accepts a block of code (essentailly like .select)' do
+            When(:result) { Marvel::SuperHero.where { |h| h.real_name =~ /^Bruce/ } }
+            Then { result.count == 2 }
+          end
+
+          describe 'accepts a hash' do
+            When(:result) { Marvel::SuperHero.where( real_name: 'Clark Kent' ) }
+            Then { result.count == 1 }
+          end
+
+          describe 'accepts a symbol' do
+            Given { Marvel::SuperHero['The Sponge'] = { special_powers: ['soaking'] } }
+            Then  { Marvel::SuperHero.where( :special_powers ).count == 4 }
+            Then  { Marvel::SuperHero.where( :real_name ).count == 3 }
+          end
+
+          describe 'accepts boolean symbols' do
+            Given do
+              %w[ Superman Batman ].each do |h|
+                hero = Marvel::SuperHero.find h
+                hero.caped = true
+                hero.save
+              end
+            end
+            Then { Marvel::SuperHero.where(:caped?).count == 2 }
+            Then { Marvel::SuperHero.where(:caped).count == 2 }
+          end
+
+          describe 'accepts both block and args' do
+            Given do
+              Marvel::SuperHero.find('Superman').tap do |superman|
+                superman.special_powers = ['smash']
+              end.save
+            end
+            When(:result) { Marvel::SuperHero.where(special_powers: ['smash']) { |h| h.real_name =~ /^Bruce/ } }
+            Then { result.count == 1 }
+          end
+
+          context 'with invalid properties as arguments' do
+            Given(:bogus_hash) { { bogus: 'hash' } }
+            Then { expect{Marvel::SuperHero.where(bogus_hash)}.to raise_error(ArgumentError) }
+          end
         end
 
         describe 'models are enumerable!' do
@@ -155,13 +196,13 @@ module Squares
       describe '#to_h' do
         Given(:hero1) { test_class.new id, real_name: name, special_powers: powers }
         context 'default key name' do
-          Given(:expected_hash) { { id: id, real_name: name, special_powers: powers } }
+          Given(:expected_hash) { { id: id, real_name: name, special_powers: powers, caped?: false } }
           When(:result) { hero1.to_h }
           Then { expect(result).to eq(expected_hash) }
         end
 
         context 'custom key name' do
-          Given(:expected_hash) { { hero: id, real_name: name, special_powers: powers } }
+          Given(:expected_hash) { { hero: id, real_name: name, special_powers: powers, caped?: false } }
           When(:result) { hero1.to_h(:hero) }
           Then { expect(result).to eq(expected_hash) }
         end
@@ -290,7 +331,7 @@ module Squares
 
         Then { hero.special_powers == nil }
         Then { hero.hair_color == 'black' }
-        Then { Marvel::SuperHero.defaults == { hair_color: 'black' } }
+        Then { Marvel::SuperHero.defaults == { caped?: false, hair_color: 'black' } }
       end
 
     end

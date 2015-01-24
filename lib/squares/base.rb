@@ -49,7 +49,7 @@ module Squares
     end
 
     def valid_property? property
-      !!normalize_property(property)
+      self.class.valid_property? property
     end
 
     private
@@ -79,22 +79,15 @@ module Squares
 
     def set_property property, value
       unless valid_property?(property)
-        raise ArgumentError.new("\"#{property}\" is not a valid property!")
+        raise ArgumentError.new("\"#{property}\" is not a valid property of #{self.class}")
       end
       instance_variable_set("@#{instance_var_string_for property}", value).tap do |value|
         @_changed = true
       end
     end
 
-    def normalize_property property
-      unless properties.include?(property)
-        property = "#{property}?".to_sym if properties.include?("#{property}?".to_sym)
-      end
-      properties.include?(property) && property
-    end
-
     def instance_var_string_for property
-      property = normalize_property property
+      property = self.class.normalize_property property
       if property.to_s.match(/\?$/)
         "#{property.to_s.gsub(/\?$/,'')}__question__".to_sym
       else
@@ -148,6 +141,17 @@ module Squares
         store.values.map{ |i| Marshal.restore i }
       end
 
+      def valid_property? property
+        !!normalize_property(property)
+      end
+
+      def normalize_property property
+        unless properties.include?(property)
+          property = "#{property}?".to_sym if properties.include?("#{property}?".to_sym)
+        end
+        properties.include?(property) && property
+      end
+
       def delete id
         store.delete id
       end
@@ -155,7 +159,33 @@ module Squares
       def each &block
         values.each &block
       end
-      alias_method :where, :select
+
+      def where(*args, &block)
+        result_set = []
+        if block
+          result_set = values.select(&block)
+          return result_set if result_set.empty?
+        end
+
+        args.each do |arg|
+          if arg.kind_of?(Hash)
+            result_set = (!result_set.empty? ? result_set : values).reject do |i|
+              failed_matches = 0
+              arg.each do |k,v|
+                raise ArgumentError.new("\"#{k}\" is not a valid property of #{self}") unless valid_property?(k)
+                failed_matches += 1 unless i[k] == v
+              end
+              failed_matches > 0
+            end
+          elsif arg.kind_of?(Symbol)
+            raise ArgumentError.new("\"#{arg}\" is not a valid property of #{self}") unless valid_property?(arg)
+            result_set = (result_set.empty? ? values : result_set).select do |i|
+              i[arg]
+            end
+          end
+        end
+        result_set
+      end
 
       def property prop, opts={}
         @_properties ||= []
@@ -167,8 +197,8 @@ module Squares
         define_method "#{prop.to_s.gsub(/\?$/, '')}=" do |v|
           set_property prop, v
         end
-        if default = opts[:default]
-          defaults[prop] = default
+        if opts.has_key?(:default)
+          defaults[prop] = opts[:default]
         end
       end
 
