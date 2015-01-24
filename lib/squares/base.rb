@@ -52,6 +52,10 @@ module Squares
       self.class.valid_property? property
     end
 
+    def defaults
+      self.class.defaults
+    end
+
     private
 
     def properties_equal other
@@ -63,14 +67,24 @@ module Squares
     def apply *args
       @id, values = *args
       values_hash = values.to_h
-      self.class.properties.each do |property|
+      properties_sorted_by_defaults.each do |property|
         value = values_hash.has_key?(property) ? values_hash[property] : default_for(property)
         set_property property, value
       end
     end
 
+    def properties_sorted_by_defaults
+      properties.sort do |a,b|
+        a_val = defaults[a].respond_to?(:call) ? 1 : 0
+        b_val = defaults[b].respond_to?(:call) ? 1 : 0
+        a_val <=> b_val
+      end
+    end
+
     def default_for property
-      self.class.defaults[property]
+      defaults[property].respond_to?(:call) ?
+        defaults[property].call(self) :
+        defaults[property]
     end
 
     def get_property property

@@ -313,7 +313,7 @@ module Squares
         context 'unchanged, but then modified' do
           Given { hero.save }
           When  { hero.real_name = 'Fred Flintstone' }
-          Then { expect(hero).to be_changed }
+          Then  { expect(hero).to be_changed }
         end
         context 'after create' do
           Given(:made_hero) { test_class.create 'Iron Man', real_name: 'Tony Stark', special_powers: ['snark'] }
@@ -322,18 +322,36 @@ module Squares
       end
 
       describe 'default values' do
-        Given do
-          class Marvel::SuperHero < Squares::Base
-            property :hair_color, default: 'black'
+        context 'as a simple value' do
+          Given do
+            class Marvel::SuperHero < Squares::Base
+              property :hair_color, default: 'black'
+            end
           end
+          When(:hero) { test_class.new id, real_name: name }
+
+          Then { hero.special_powers == nil }
+          Then { hero.hair_color == 'black' }
+          Then { Marvel::SuperHero.defaults == { caped?: false, hair_color: 'black' } }
         end
-        When(:hero) { test_class.new id, real_name: name }
 
-        Then { hero.special_powers == nil }
-        Then { hero.hair_color == 'black' }
-        Then { Marvel::SuperHero.defaults == { caped?: false, hair_color: 'black' } }
+        context 'as a callback' do
+          Given do
+            class Marvel::SuperHero < Squares::Base
+              property :hungry?, default: lambda{ |i| i.earthling? && i.body_mass > 150 }
+              property :body_mass, default: 160
+              property :earthling?, default: true
+            end
+          end
+          Given(:the_fly)   { test_class.new 'The Fly', body_mass: 110 }
+          Given(:manhunter) { test_class.new 'Manhunter', earthling?: false }
+          Given(:colossus)  { test_class.new 'Colossus', body_mass: 350 }
+          Then { expect(the_fly).to_not be_hungry }
+          Then { expect(manhunter).to_not be_hungry }
+          Then { expect(colossus).to be_hungry }
+        end
+
       end
-
     end
 
     describe 'instance properties' do
