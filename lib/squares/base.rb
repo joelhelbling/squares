@@ -4,18 +4,25 @@ module Squares
 
     def initialize *args
       apply *args
+      trigger :after_initialize
     end
 
     def save
+      trigger :before_save
       @_changed = false
-      store[@id] = Marshal.dump self
+      store[@id] = Marshal.dump self.dup
+      trigger :after_save
       nil
     end
 
     def delete
       self.class.delete self.id
     end
-    alias_method :destroy, :delete
+
+    def destroy
+      trigger :before_destroy
+      delete
+    end
 
     def == other
       @id == other.id && properties_equal(other)
@@ -63,6 +70,18 @@ module Squares
 
     private
 
+    def trigger hook_name
+      return if @hook_callback_in_progress
+      hooks = self.class.hooks
+      if hooks && hooks[hook_name]
+        hooks[hook_name].each do |hook|
+          @hook_callback_in_progress = true
+          self.instance_eval &hook
+          @hook_callback_in_progress = false
+        end
+      end
+    end
+
     def properties_equal other
       ! properties.detect do |property|
         self.send(property) != other.send(property)
@@ -79,7 +98,7 @@ module Squares
     end
 
     def properties_sorted_by_defaults
-      properties.sort do |a,b|
+      (properties || []).sort do |a,b|
         a_val = defaults[a].respond_to?(:call) ? 1 : 0
         b_val = defaults[b].respond_to?(:call) ? 1 : 0
         a_val <=> b_val
@@ -124,7 +143,9 @@ module Squares
 
       def [] id
         if item = store[id]
-          Marshal.restore item
+          Marshal.restore(item).tap do |item|
+            item.instance_eval 'trigger :after_find'
+          end
         end
       end
       alias_method :find, :[]
@@ -141,7 +162,11 @@ module Squares
           something which responds to #to_h"
           ERR
         end
-        instance.tap { |i| i.save }
+        instance.tap do |i|
+          i.instance_eval 'trigger :before_create'
+          i.save
+          i.instance_eval 'trigger :after_create'
+        end
       end
       alias_method :create, :[]=
 
@@ -251,7 +276,48 @@ module Squares
         @_models.uniq.sort { |a,b| a.to_s <=> b.to_s }
       end
 
+      ### hooks
+      def hooks
+        @_hooks
+      end
+
+      def before_create *args, &block
+        add_hook :before_create, args, block
+      end
+
+      def after_create *args, &block
+        add_hook :after_create, args, block
+      end
+
+      def after_initialize *args, &block
+        add_hook :after_initialize, args, block
+      end
+
+      def after_find *args, &block
+        add_hook :after_find, args, block
+      end
+
+      def before_save *args, &block
+        add_hook :before_save, args, block
+      end
+
+      def after_save *args, &block
+        add_hook :after_save, args, block
+      end
+
+      def before_destroy *args, &block
+        add_hook :before_destroy, args, block
+      end
+
+      ### /hooks
+
       private
+
+      def add_hook hook_id, args, block
+        @_hooks ||= {}
+        @_hooks[hook_id] ||= []
+        @_hooks[hook_id] << block
+      end
 
       def uniquify_properties
         @_properties = @_properties.uniq.compact
