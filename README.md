@@ -47,9 +47,16 @@ You can also provide a default value if you switch to the `property` variant:
 
 ```ruby
 class Person < Squares::Base
-  property :eye_color, default: 'brown'
+  property :irish?, default: false
+  property :eye_color, default: do |person|
+    person.irish? ? 'green' : 'brown'
+  end
 end
 ```
+
+Note that defaults which use callbacks (anything that responds to #call) are
+always applied _after_ defaults which don't use callbacks.  Reverse the order
+of the above two properties, and their defaults would still work.
 
 ### Bootstrapping
 
@@ -118,10 +125,25 @@ When we retrieve an object, it returns an instance of that model:
 
 ```ruby
 wallcrawler = Person['spiderman']
-wallcrawler = Person.find 'spiderman' #=> same, shmame.
-wallcrawler.id                        #=> 'spiderman'
-wallcrawler.real_name                 #=> 'Peter Parker'
-wallcrawler.class                     #=> Person
+wallcrawler = Person.find 'spiderman'      #=> same, shmame.
+wallcrawler.class                          #=> Person
+wallcrawler.id                             #=> 'spiderman'
+```
+
+And then, of course, you can
+
+```ruby
+wallcrawler.real_name                      #=> 'Peter Parker'
+wallcrawler[:real_name]                    #=> 'Peter Parker'
+wallcrawler.real_name = 'Petah Pahkah'     #=> Boston's own
+wallcrawler[:real_name] = 'Peshmerga Pete' #=> What is this, even?
+
+wallcrawler.changed?                       #=> true
+wallcrawler.save                           #=> now it's official
+
+wallcrawler.update_properties(             #=> also aliased as
+  real_name: 'Peter Parker'                #   #update_attributes
+)
 ```
 
 Of course, for some types of storage, the model object has to be serialized and
@@ -129,7 +151,7 @@ de-serialized when it's stored and retrieved.  Squares uses `Marshal.dump` and
 `Marshal.restore` to do that.  This means that custom marshalling can be added
 to your models (see [documentation on ruby Marshal][marshal]).
 
-### Even More Fun
+### _Where_-able Computing
 
 You can use the ActiveRecord-esque `.where` method with a block to retrieve records
 for which the block returns true:
@@ -138,12 +160,50 @@ for which the block returns true:
 Person.where { |p| p.left_handed == true } #=> all the lefties
 ```
 
-The `.where` method is actually just an alias of `.select`...which means, yeah!
-Squares are enumerable, yay!
+In this mode, `.where` is essentially just like `.select`...which, oh yeah!
+Squares are enumerable! Yay!
 
 ```ruby
 Person.map(&:name) #=> an array containing all the names
 ```
+
+But you can also pass a hash to `.where` and it will do the expected thing:
+
+```ruby
+Person.where( country: 'Latvaria' )  #=> Dr. Doom, I presume?
+```
+
+And if you give `.where` a series of symbol arguments, it will consider them as
+properties, and check the truthyness of each:
+
+```ruby
+Person.where( :flying?, :secret_lair )  #=> Superman!
+```
+
+### Square Hooks
+
+You can hang a callable (such as a Proc, a Lambda or an instance of class Batman
+which implements `#call`) on any of Squares' polished, hand-crafted hooks:
+
+```ruby
+class Hero
+  after_initialize do
+    tweet "In a world..."
+  end
+end
+```
+
+Squares supports the following hooks:
+
+* after_initialize
+* before/after_create
+* after_find (e.g. after `.find` and also `.[]`)
+* before/after_save
+* before_destroy (`#delete` does not trigger this callback)
+
+There are two important things to remember about Squares' hooks: 1) while a hooked
+callback is in progress, no other hooks will be triggered (i.e. hooks can't fire
+hooks), and 2) never feed Square Hooks after midnight.
 
 ### What It Doesn't Do
 
@@ -194,6 +254,19 @@ you.awesome? #=> nil
 But hey, who cares, as long as yak hair is truthy?
 
 [marshal]:http://www.ruby-doc.org/core-2.1.5/Marshal.html
+
+## What's New in 0.3.0
+
+* property defaults can use a callback
+* implemented `#[]` on instances (to access properties)
+* `#update_properties` (i.e. `#update_attributes`)
+* square hooks
+* `#changed?`
+* `.where` accepts a hash, and/or series of properties
+
+You can read in more detail on the [0.3.0 milestone][milestone]
+
+[milestone]:https://github.com/joelhelbling/squares/issues?q=milestone%3A0.3.0+sort%3Acreated-asc
 
 ## Contributing
 
