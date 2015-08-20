@@ -3,14 +3,14 @@ module Squares
     attr_accessor :id
 
     def initialize *args
-      apply *args
+      build_instance *args
       trigger :after_initialize
     end
 
     def save
       trigger :before_save
       @_changed = false
-      store[@id] = Marshal.dump self.dup
+      store[@id] = serialize
       trigger :after_save
       nil
     end
@@ -68,7 +68,17 @@ module Squares
       self.class.defaults
     end
 
+    def serialize
+      serializers.inject(self.dup) do |memo, serializer|
+        serializer.dump memo
+      end
+    end
+
     private
+
+    def serializers
+      self.class.serializers
+    end
 
     def trigger hook_name
       return if @hook_callback_in_progress
@@ -88,7 +98,7 @@ module Squares
       end
     end
 
-    def apply *args
+    def build_instance *args
       @id, values = *args
       values_hash = values.to_h
       properties_sorted_by_defaults.each do |property|
@@ -141,9 +151,13 @@ module Squares
     class << self
       include Enumerable
 
+      def serializers
+        [Marshal]
+      end
+
       def [] id
         if item = store[id]
-          Marshal.restore(item).tap do |item|
+          deserialize(item).tap do |item|
             item.instance_eval 'trigger :after_find'
           end
         end
@@ -182,7 +196,7 @@ module Squares
       end
 
       def values
-        store.values.map{ |i| Marshal.restore i }
+        store.values.map{ |i| deserialize i }
       end
 
       def valid_property? property
@@ -326,6 +340,12 @@ module Squares
       def inherited(subclass)
         @_models ||= []
         @_models << subclass
+      end
+
+      def deserialize item
+        serializers.reverse.inject(item) do |memo, serializer|
+          serializer.restore item
+        end
       end
 
     end
