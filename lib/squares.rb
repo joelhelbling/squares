@@ -1,5 +1,6 @@
 require 'squares/version'
 require 'squares/base'
+require 'json'
 
 module Squares
   class << self

@@ -52,13 +52,18 @@ module Squares
       self.class.properties
     end
 
-    def to_h(key_name = :id)
-      h = { key_name => id }
-      properties.each do |property|
-        h[property] = self.send(property)
-      end
-      h
+    def to_json(key_name = :id)
+      to_hash(key_name).to_json
     end
+
+    def to_h(key_name = :id)
+      { :type => self.class.name, key_name => id }.tap do |h|
+        properties.each do |property|
+          h[property] = self[property]
+        end
+      end
+    end
+    alias_method :to_hash, :to_h
 
     def valid_property? property
       self.class.valid_property? property

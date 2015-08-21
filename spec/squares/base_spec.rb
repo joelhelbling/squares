@@ -205,15 +205,45 @@ module Squares
       describe '#to_h' do
         Given(:hero1) { test_class.new id, real_name: name, special_powers: powers }
         context 'default key name' do
-          Given(:expected_hash) { { id: id, real_name: name, special_powers: powers, caped?: false } }
+          Given(:expected_hash) { { type: 'Marvel::SuperHero', id: id, real_name: name, special_powers: powers, caped?: false } }
           When(:result) { hero1.to_h }
           Then { expect(result).to eq(expected_hash) }
         end
 
         context 'custom key name' do
-          Given(:expected_hash) { { hero: id, real_name: name, special_powers: powers, caped?: false } }
+          Given(:expected_hash) { { type: 'Marvel::SuperHero', hero: id, real_name: name, special_powers: powers, caped?: false } }
           When(:result) { hero1.to_h(:hero) }
           Then { expect(result).to eq(expected_hash) }
+        end
+      end
+
+      describe '#to_json' do
+        Given(:hero1) { test_class.new id, real_name: name, special_powers: powers }
+        context 'default key name' do
+          Given(:expected_json) do
+            {
+              type: 'Marvel::SuperHero',
+              id: id,
+              real_name: name,
+              special_powers: powers,
+              caped?: false
+            }.to_json
+          end
+          When(:result) { hero1.to_json }
+          Then { expect(result).to eq(expected_json) }
+        end
+        context 'custom key name' do
+          Given(:expected_json) do
+            {
+              type: 'Marvel::SuperHero',
+              hero: id,
+              real_name: name,
+              special_powers: powers,
+              caped?: false
+            }.to_json
+          end
+          When(:result) { hero1.to_json(:hero) }
+          Then { expect(result).to eq(expected_json) }
         end
       end
 
