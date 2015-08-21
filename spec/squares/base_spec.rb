@@ -1,20 +1,6 @@
 require 'spec_helper'
 require 'squares/base'
 
-module Marvel
-  class SuperHero < Squares::Base
-    properties :real_name, :special_powers
-    property :caped?, default: false
-  end
-  class Villain < Squares::Base
-    properties :vehicle, :lair
-    property :really_evil?, default: true
-  end
-  class Sidekick < Squares::Base
-    property :catch_phrase
-  end
-end
-
 module Squares
   describe Base do
     Given(:storage)    { {} }

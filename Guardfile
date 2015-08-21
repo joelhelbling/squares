@@ -46,6 +46,7 @@ guard :rspec, cmd: "bundle exec rspec" do
   rspec = dsl.rspec
   watch(rspec.spec_helper) { rspec.spec_dir }
   watch(rspec.spec_support) { rspec.spec_dir }
+  watch(%r{^spec/fixtures/.*\.rb$}) { rspec.spec_dir }
   watch(rspec.spec_files)
 
   # Ruby files
