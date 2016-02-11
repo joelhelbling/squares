@@ -48,9 +48,9 @@ You can also provide a default value if you switch to the `property` variant:
 ```ruby
 class Person < Squares::Base
   property :irish?, default: false
-  property :eye_color, default: do |person|
+  property :eye_color, default: lambda { |person|
     person.irish? ? 'green' : 'brown'
-  end
+  }
 end
 ```
 
