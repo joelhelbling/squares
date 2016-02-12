@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["joel@joelhelbling.com"]
   spec.summary       = %q{Lightweight ORM backed by any hash-like storage. [*]}
   spec.description   = %q{[*] Lightweight ORM backed by any hash-like storage: Redis, LevelDB or plain old hashes.}
-  spec.homepage      = "http://github.com/joelhelbling/squares"
+  spec.homepage      = "http://squares.joelhelbling.com"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
