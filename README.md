@@ -1,3 +1,7 @@
+<a href="https://travis-ci.org/joelhelbling/squares">
+  <img src="https://travis-ci.org/joelhelbling/squares.svg" alt="buildsies:">
+</a>
+
 # Squares \[\*\]
 
 A lightweight ORM backed by any hash-like storage.  Hand-crafted from a solid piece of pure
