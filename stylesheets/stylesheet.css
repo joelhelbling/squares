@@ -466,6 +466,10 @@ header h1 {
   letter-spacing: -1px;
 }
 
+header h1 span.logo {
+  color: #F6821D;
+}
+
 header h2 {
   width: 640px;
   margin-top: 0;
