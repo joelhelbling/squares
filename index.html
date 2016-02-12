@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Squares [*] by joelhelbling</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Squares [*]</h1>
+        <h2>a lightweight ORM backed by any hash-like storage</h2>
+        <a href="https://github.com/joelhelbling/squares" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <p>Hand-crafted from a solid piece of pure aircraft-grade Ruby and drawing distilled awesomeness from atmospheric pollutants, <strong>Squares'</strong> only dependency is you.</p>
+
+<h2>
+<a id="installation-blah-blah-blah" class="anchor" href="#installation-blah-blah-blah" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation Blah, Blah, Blah</h2>
+
+<p><em>I swear, this part of the README just rolled right out of</em> <code>bundle gem squares</code>.</p>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">gem</span> <span class="pl-s"><span class="pl-pds">'</span>squares<span class="pl-pds">'</span></span></pre></div>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself as:</p>
+
+<pre><code>$ gem install squares
+</code></pre>
+
+<p><em>And yeah, I did enjoy typing</em> <code>bundle gem squares</code>.  <em>It sounds like something to
+eat.  Now I'm hungry.</em></p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<p><em>Because you are going to use it.</em></p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">require</span> <span class="pl-s"><span class="pl-pds">'</span>squares<span class="pl-pds">'</span></span></pre></div>
+
+<h3>
+<a id="write-models" class="anchor" href="#write-models" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Write Models</h3>
+
+<p><em>How come they never write back?</em></p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Person<span class="pl-e"> &lt; Squares::Base</span></span>
+  properties <span class="pl-c1">:real_name</span>, <span class="pl-c1">:age</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>You can also provide a default value if you switch to the <code>property</code> variant:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Person<span class="pl-e"> &lt; Squares::Base</span></span>
+  property <span class="pl-c1">:irish?</span>, <span class="pl-c1">default:</span> <span class="pl-c1">false</span>
+  property <span class="pl-c1">:eye_color</span>, <span class="pl-c1">default:</span> lambda { |<span class="pl-smi">person</span>|
+    person.irish? <span class="pl-k">?</span> <span class="pl-s"><span class="pl-pds">'</span>green<span class="pl-pds">'</span></span> : <span class="pl-s"><span class="pl-pds">'</span>brown<span class="pl-pds">'</span></span>
+  }
+<span class="pl-k">end</span></pre></div>
+
+<p>Note that defaults which use callbacks (anything that responds to #call) are
+always applied <em>after</em> defaults which don't use callbacks.  Reverse the order
+of the above two properties, and their defaults would still work.</p>
+
+<h3>
+<a id="bootstrapping" class="anchor" href="#bootstrapping" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Bootstrapping</h3>
+
+<p><em>A funny word for "setup &amp; configure".  Bootstrapping.  Bootstrapping.  See?  Funny.</em></p>
+
+<p>Now you can bootstrap <code>;)</code> your model to a hash-like storage object like so:</p>
+
+<div class="highlight highlight-source-ruby"><pre>people_storage <span class="pl-k">=</span> <span class="pl-c1">Redis</span>::<span class="pl-c1">Namespace</span>.<span class="pl-k">new</span>(
+                   <span class="pl-c1">Person</span>.underscore_name,
+                   <span class="pl-c1">:redis</span> =&gt; <span class="pl-smi">$redis_connection</span> )
+
+<span class="pl-c1">Person</span>.store <span class="pl-k">=</span> people_storage</pre></div>
+
+<p>Or if you just want to use a plain ole in-memory hash:</p>
+
+<div class="highlight highlight-source-ruby"><pre>tom_sellecks_mustache <span class="pl-k">=</span> {}
+<span class="pl-c1">Soup</span>.store <span class="pl-k">=</span> tom_sellecks_mustache</pre></div>
+
+<p>Squares actually defaults the store to an empty hash, which means if you're ok
+with in-memory, transient storage (e.g. when writing tests, etc.) you don't have
+to do any config-- er, bootstrapping <code>;)</code> at all!</p>
+
+<p>You can setup a bunch of 'em like this:</p>
+
+<div class="highlight highlight-source-ruby"><pre>[<span class="pl-c1">Person</span>, <span class="pl-c1">Place</span>, <span class="pl-c1">SwampThing</span>].each <span class="pl-k">do </span>|<span class="pl-smi">model</span>|
+  model.store <span class="pl-k">=</span> <span class="pl-c1">LevelDB</span>::<span class="pl-c1">DB</span>.<span class="pl-k">new</span>(<span class="pl-s"><span class="pl-pds">"</span>./tmp/<span class="pl-pse">#{</span><span class="pl-s1">model.underscore_name</span><span class="pl-pse"><span class="pl-s1">}</span></span><span class="pl-pds">"</span></span>)
+<span class="pl-k">end</span></pre></div>
+
+<p>But it gets even better: the Squares module is an <code>Enumerable</code> which enumerates all
+the model classes (inheritors of <code>Squares::Base</code>).  So you can:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Squares</span>.map <span class="pl-k">&amp;</span><span class="pl-c1">:underscore_name</span> <span class="pl-c">#=&gt; ['person', 'place', 'swamp_thing']</span></pre></div>
+
+<p>Or better yet:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Squares</span>.each <span class="pl-k">do </span>|<span class="pl-smi">model</span>|
+  model.store <span class="pl-k">=</span> <span class="pl-c1">LevelDB</span>::<span class="pl-c1">DB</span>.<span class="pl-k">new</span> <span class="pl-s"><span class="pl-pds">'</span>./tmp/#{model.underscore_name}<span class="pl-pds">'</span></span>
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="onward-to-the-fun" class="anchor" href="#onward-to-the-fun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Onward To The Fun</h3>
+
+<p>Squares does not auto-generate an <code>:id</code> for each new object --you'll do that
+and it will be used as the "key" in the hash storage.  In the following example,
+we're creating a new <code>Person</code> and using 'spiderman' as the key:</p>
+
+<div class="highlight highlight-source-ruby"><pre>pete <span class="pl-k">=</span> <span class="pl-c1">Person</span>.<span class="pl-k">new</span>(<span class="pl-s"><span class="pl-pds">'</span>spiderman<span class="pl-pds">'</span></span>, <span class="pl-c1">real_name:</span> <span class="pl-s"><span class="pl-pds">'</span>Peter Parker<span class="pl-pds">'</span></span>, <span class="pl-c1">age:</span> <span class="pl-c1">17</span>)
+<span class="pl-c">#                 ^^^ key ^^^  ^^^^^^^^^^^ properties ^^^^^^^^^^^</span>
+pete.save
+
+<span class="pl-c1">Person</span>.has_key? <span class="pl-s"><span class="pl-pds">'</span>spiderman<span class="pl-pds">'</span></span> <span class="pl-c">#=&gt; true</span>
+pete.id                     <span class="pl-c">#=&gt; 'spiderman'</span></pre></div>
+
+<p>When we retrieve an object, it returns an instance of that model:</p>
+
+<div class="highlight highlight-source-ruby"><pre>wallcrawler <span class="pl-k">=</span> <span class="pl-c1">Person</span>[<span class="pl-s"><span class="pl-pds">'</span>spiderman<span class="pl-pds">'</span></span>]
+wallcrawler <span class="pl-k">=</span> <span class="pl-c1">Person</span>.find <span class="pl-s"><span class="pl-pds">'</span>spiderman<span class="pl-pds">'</span></span>      <span class="pl-c">#=&gt; same, shmame.</span>
+wallcrawler.class                          <span class="pl-c">#=&gt; Person</span>
+wallcrawler.id                             <span class="pl-c">#=&gt; 'spiderman'</span></pre></div>
+
+<p>And then, of course, you can</p>
+
+<div class="highlight highlight-source-ruby"><pre>wallcrawler.real_name                      <span class="pl-c">#=&gt; 'Peter Parker'</span>
+wallcrawler[<span class="pl-c1">:real_name</span>]                    <span class="pl-c">#=&gt; 'Peter Parker'</span>
+wallcrawler.real_name <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Petah Pahkah<span class="pl-pds">'</span></span>     <span class="pl-c">#=&gt; Boston's own</span>
+wallcrawler[<span class="pl-c1">:real_name</span>] <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Peshmerga Pete<span class="pl-pds">'</span></span> <span class="pl-c">#=&gt; What is this, even?</span>
+
+wallcrawler.changed?                       <span class="pl-c">#=&gt; true</span>
+wallcrawler.save                           <span class="pl-c">#=&gt; now it's official</span>
+
+wallcrawler.update_properties(             <span class="pl-c">#=&gt; also aliased as</span>
+  <span class="pl-c1">real_name:</span> <span class="pl-s"><span class="pl-pds">'</span>Peter Parker<span class="pl-pds">'</span></span>                <span class="pl-c">#   #update_attributes</span>
+)</pre></div>
+
+<p>Of course, for some types of storage, the model object has to be serialized and
+de-serialized when it's stored and retrieved.  Squares uses <code>Marshal.dump</code> and
+<code>Marshal.restore</code> to do that.  This means that custom marshalling can be added
+to your models (see <a href="http://www.ruby-doc.org/core-2.1.5/Marshal.html">documentation on ruby Marshal</a>).</p>
+
+<h3>
+<a id="where-able-computing" class="anchor" href="#where-able-computing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><em>Where</em>-able Computing</h3>
+
+<p>You can use the ActiveRecord-esque <code>.where</code> method with a block to retrieve records
+for which the block returns true:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Person</span>.where { |<span class="pl-smi">p</span>| p.left_handed <span class="pl-k">==</span> <span class="pl-c1">true</span> } <span class="pl-c">#=&gt; all the lefties</span></pre></div>
+
+<p>In this mode, <code>.where</code> is essentially just like <code>.select</code>...which, oh yeah!
+Squares are enumerable! Yay!</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Person</span>.map(<span class="pl-k">&amp;</span><span class="pl-c1">:name</span>) <span class="pl-c">#=&gt; an array containing all the names</span></pre></div>
+
+<p>But you can also pass a hash to <code>.where</code> and it will do the expected thing:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Person</span>.where( <span class="pl-c1">country:</span> <span class="pl-s"><span class="pl-pds">'</span>Latvaria<span class="pl-pds">'</span></span> )  <span class="pl-c">#=&gt; Dr. Doom, I presume?</span></pre></div>
+
+<p>And if you give <code>.where</code> a series of symbol arguments, it will consider them as
+properties, and check the truthyness of each:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Person</span>.where( <span class="pl-c1">:flying?</span>, <span class="pl-c1">:secret_lair</span> )  <span class="pl-c">#=&gt; Superman!</span></pre></div>
+
+<h3>
+<a id="square-hooks" class="anchor" href="#square-hooks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Square Hooks</h3>
+
+<p>You can hang a callable (such as a Proc, a Lambda or an instance of class Batman
+which implements <code>#call</code>) on any of Squares' polished, hand-crafted hooks:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Hero</span>
+  after_initialize <span class="pl-k">do</span>
+    tweet <span class="pl-s"><span class="pl-pds">"</span>In a world...<span class="pl-pds">"</span></span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Squares supports the following hooks:</p>
+
+<ul>
+<li>after_initialize</li>
+<li>before/after_create</li>
+<li>after_find (e.g. after <code>.find</code> and also <code>.[]</code>)</li>
+<li>before/after_save</li>
+<li>before_destroy (<code>#delete</code> does not trigger this callback)</li>
+</ul>
+
+<p>There are two important things to remember about Squares' hooks: 1) while a hooked
+callback is in progress, no other hooks will be triggered (i.e. hooks can't fire
+hooks), and 2) never feed Square Hooks after midnight.</p>
+
+<h3>
+<a id="what-it-doesnt-do" class="anchor" href="#what-it-doesnt-do" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What It Doesn't Do</h3>
+
+<p>Much like Wolverine, Squares doesn't do relationships.  You'll have to
+maintain those in your code.  If you have an issue with that, leave me
+an issue, and I'll think about what that might mean.</p>
+
+<p>Squares neither knows nor cares about the type or contents of your model
+instance's properties.  This has consequences.</p>
+
+<p>First, anything you stash had darn well better be marshal-able, or there
+will be blood on the roller-rink.  Or at least errors.  Yeah, I've made
+sure there won't be blood (you're welcome), but watch out for errors.
+If you run into problems, refer to the <a href="http://www.ruby-doc.org/core-2.1.5/Marshal.html">documentation on ruby Marshal</a>.</p>
+
+<p>Second, there is no magic-fu for stuff like generating question methods
+for boolean properties.  For example, it doesn't make a <code>#left_handed?</code> method
+out of your <code>property :left_handed</code>).  But hey, you know what you can
+do?  Behold:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">class</span> <span class="pl-en">Person</span>
+  property <span class="pl-c1">:awesome?</span>, <span class="pl-c1">default:</span> <span class="pl-c1">true</span> <span class="pl-c">#=&gt; What?! is that a "?"</span>
+<span class="pl-k">end</span></pre></div>
+
+<p>Ok, don't interrupt me, I'm selling here...</p>
+
+<div class="highlight highlight-source-ruby"><pre>you <span class="pl-k">=</span> <span class="pl-c1">Person</span>.<span class="pl-k">new</span>
+you.awesome? <span class="pl-c">#=&gt; true</span></pre></div>
+
+<p>Of course, Squares doesn't mind how you use <code>#awesome?</code> and the corresponding <code>#awesome=</code> methods:</p>
+
+<div class="highlight highlight-source-ruby"><pre>you.awesome <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>yak hair<span class="pl-pds">'</span></span>
+you.awesome? <span class="pl-c">#=&gt; 'yak hair'</span></pre></div>
+
+<p>or</p>
+
+<div class="highlight highlight-source-ruby"><pre>you.awesome <span class="pl-k">=</span> <span class="pl-c1">nil</span>
+you.awesome? <span class="pl-c">#=&gt; nil</span></pre></div>
+
+<p>But hey, who cares, as long as yak hair is truthy?</p>
+
+<h2>
+<a id="whats-new-in-030" class="anchor" href="#whats-new-in-030" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What's New in 0.3.0</h2>
+
+<ul>
+<li>property defaults can use a callback</li>
+<li>implemented <code>#[]</code> on instances (to access properties)</li>
+<li>
+<code>#update_properties</code> (i.e. <code>#update_attributes</code>)</li>
+<li>square hooks</li>
+<li><code>#changed?</code></li>
+<li>
+<code>.where</code> accepts a hash, and/or series of properties</li>
+</ul>
+
+<p>You can read in more detail on the <a href="https://github.com/joelhelbling/squares/issues?q=milestone%3A0.3.0+sort%3Acreated-asc">0.3.0 milestone</a></p>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it ( <a href="https://github.com/joelhelbling/squares/fork">https://github.com/joelhelbling/squares/fork</a> )</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/joelhelbling/squares/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/joelhelbling/squares/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/joelhelbling/squares"></a> is maintained by <a href="https://github.com/joelhelbling">joelhelbling</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
