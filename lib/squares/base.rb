@@ -1,5 +1,9 @@
+require_relative 'hooks'
+
 module Squares
   class Base
+    extend Hooks
+
     attr_accessor :id
 
     def initialize *args
@@ -73,28 +77,16 @@ module Squares
       self.class.defaults
     end
 
+    private
+
     def serialize
       serializers.inject(self.dup) do |memo, serializer|
         serializer.dump memo
       end
     end
 
-    private
-
     def serializers
       self.class.serializers
-    end
-
-    def trigger hook_name
-      return if @hook_callback_in_progress
-      hooks = self.class.hooks
-      if hooks && hooks[hook_name]
-        hooks[hook_name].each do |hook|
-          @hook_callback_in_progress = true
-          self.instance_eval &hook
-          @hook_callback_in_progress = false
-        end
-      end
     end
 
     def properties_equal other
@@ -295,48 +287,7 @@ module Squares
         (@_models || []).uniq.sort { |a,b| a.to_s <=> b.to_s }
       end
 
-      ### hooks
-      def hooks
-        @_hooks
-      end
-
-      def before_create *args, &block
-        add_hook :before_create, args, block
-      end
-
-      def after_create *args, &block
-        add_hook :after_create, args, block
-      end
-
-      def after_initialize *args, &block
-        add_hook :after_initialize, args, block
-      end
-
-      def after_find *args, &block
-        add_hook :after_find, args, block
-      end
-
-      def before_save *args, &block
-        add_hook :before_save, args, block
-      end
-
-      def after_save *args, &block
-        add_hook :after_save, args, block
-      end
-
-      def before_destroy *args, &block
-        add_hook :before_destroy, args, block
-      end
-
-      ### /hooks
-
       private
-
-      def add_hook hook_id, args, block
-        @_hooks ||= {}
-        @_hooks[hook_id] ||= []
-        @_hooks[hook_id] << block
-      end
 
       def uniquify_properties
         @_properties = @_properties.uniq.compact
