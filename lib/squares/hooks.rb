@@ -1,20 +1,7 @@
 module Squares
   module Hooks
 
-    # include it, extend, it whatever.  I'll admit I did this because
-    # I desperately wanted to write `extend Hooks` in my base class.
-    # But at the same time, I think `include` is more familiar to 
-    # more developers...
-
-    def self.included(base)
-      brang_it base
-    end
-
     def self.extended(base)
-      brang_it base
-    end
-
-    def self.brang_it(base)
       base.include InstanceMethods
       base.extend ClassMethods
     end
