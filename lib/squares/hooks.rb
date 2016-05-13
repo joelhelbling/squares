@@ -13,7 +13,7 @@ module Squares
         if hooks && hooks[hook_name]
           hooks[hook_name].each do |hook|
             @hook_callback_in_progress = true
-            self.instance_eval &hook
+            self.instance_eval(&hook)
             @hook_callback_in_progress = false
           end
         end

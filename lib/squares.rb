@@ -7,7 +7,7 @@ module Squares
     include Enumerable
 
     def each &block
-      models.each &block
+      models.each(&block)
     end
 
     def models

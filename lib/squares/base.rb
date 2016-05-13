@@ -2,12 +2,11 @@ require_relative 'hooks'
 
 module Squares
   class Base
+    attr_accessor :id
     extend Hooks
 
-    attr_accessor :id
-
     def initialize *args
-      build_instance *args
+      build_instance(*args)
       trigger :after_initialize
     end
 
@@ -126,7 +125,7 @@ module Squares
       unless valid_property?(property)
         raise ArgumentError.new("\"#{property}\" is not a valid property of #{self.class}")
       end
-      instance_variable_set("@#{instance_var_string_for property}", value).tap do |value|
+      instance_variable_set("@#{instance_var_string_for property}", value).tap do
         @_changed = true
       end
     end
@@ -154,8 +153,8 @@ module Squares
 
       def [] id
         if item = store[id]
-          deserialize(item).tap do |item|
-            item.instance_eval 'trigger :after_find'
+          deserialize(item).tap do |it|
+            it.instance_eval 'trigger :after_find'
           end
         end
       end
@@ -212,7 +211,7 @@ module Squares
       end
 
       def each &block
-        values.each &block
+        values.each(&block)
       end
 
       def where(*args, &block)
@@ -300,7 +299,7 @@ module Squares
 
       def deserialize item
         serializers.reverse.inject(item) do |memo, serializer|
-          serializer.restore item
+          serializer.restore memo
         end
       end
 
