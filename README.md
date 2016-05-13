@@ -1,6 +1,7 @@
 <a href="https://travis-ci.org/joelhelbling/squares">
   <img src="https://travis-ci.org/joelhelbling/squares.svg" alt="buildsies:">
 </a>
+[![Code Climate](https://codeclimate.com/github/joelhelbling/squares/badges/gpa.svg)](https://codeclimate.com/github/joelhelbling/squares)
 
 # Squares \[\*\]
 
