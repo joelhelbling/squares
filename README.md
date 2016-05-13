@@ -2,6 +2,8 @@
   <img src="https://travis-ci.org/joelhelbling/squares.svg" alt="buildsies:">
 </a>
 [![Code Climate](https://codeclimate.com/github/joelhelbling/squares/badges/gpa.svg)](https://codeclimate.com/github/joelhelbling/squares)
+[![Test Coverage](https://codeclimate.com/github/joelhelbling/squares/badges/coverage.svg)](https://codeclimate.com/github/joelhelbling/squares/coverage)
+[![Issue Count](https://codeclimate.com/github/joelhelbling/squares/badges/issue_count.svg)](https://codeclimate.com/github/joelhelbling/squares)
 
 # Squares \[\*\]
 
