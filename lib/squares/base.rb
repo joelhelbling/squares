@@ -147,6 +147,12 @@ module Squares
     class << self
       include Enumerable
 
+      alias_method :all, :to_a
+
+      def last
+        to_a.last
+      end
+
       def serializers
         [Marshal]
       end

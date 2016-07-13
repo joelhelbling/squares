@@ -149,6 +149,27 @@ module Squares
           When(:result) { Marvel::SuperHero.map(&:special_powers).flatten }
           Then { result == %w[ flying smash stuff ] }
         end
+
+        describe '.all' do
+          When(:result) { Marvel::SuperHero.all }
+          Then { expect(result.size).to eq(3) }
+          Then { expect(result.first.id).to eq('Superman') }
+        end
+
+        describe '.count' do
+          When(:result) { Marvel::SuperHero.count }
+          Then { expect(result).to eq(3) }
+        end
+
+        describe '.first' do
+          When(:result) { Marvel::SuperHero.first }
+          Then { expect(result.id).to eq('Superman') }
+        end
+
+        describe '.last' do
+          When(:result) { Marvel::SuperHero.last }
+          Then { expect(result.id).to eq('Batman') }
+        end
       end
 
     end # class methods
