@@ -1,4 +1,9 @@
 language: ruby
 rvm:
-  - 2.3.1
-  - 2.2.5
+- 2.3.1
+- 2.2.5
+env:
+  matrix:
+    - FOO=BAR
+  global:
+    secure: ZXaigWC4CyPcwF+W+yrDTONK2Xlp2w6bxK5/8DVzRrxF6fP5pRoLgvE1cH3ON1tflwyjbHmsx5aOppsekceZcI9R5MI9hkvtWbbAO6FMtz40qCKeOT+voOM3sDb0/qQozubV7l6ez3ozw6CHpysATudG5LspLUI0iY2kkNvPRik=
