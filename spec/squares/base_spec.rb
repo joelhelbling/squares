@@ -34,11 +34,6 @@ module Squares
         Then            { test_class.store == storage }
       end
 
-      describe '.models lists defined models (inheritors, sorted alphabetically)' do
-        When(:result) { described_class.models }
-        Then { result == [ Marvel::Sidekick, Marvel::SuperHero, Marvel::Villain ] }
-      end
-
       describe '.[]' do
         Given                 { storage[id] = Marshal.dump hero }
         When(:recovered_hero) { Marvel::SuperHero['Captain America'] }
@@ -414,8 +409,8 @@ module Squares
 
     describe 'hooks' do
       Given(:hook_spy) { double }
-      Given { expect(hook_spy).to receive(hook) }
       Given { allow_any_instance_of(Marvel::Sidekick).to receive(:spy).and_return(hook_spy) }
+      Given { expect(hook_spy).to receive(hook) }
       Given { Marvel::Sidekick.instance_variable_set "@_hooks", nil }
 
       describe '.before_create' do

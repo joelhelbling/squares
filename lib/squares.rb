@@ -11,7 +11,12 @@ module Squares
     end
 
     def models
-      Squares::Base.models
+      (@models || []).uniq.sort { |a,b| a.to_s <=> b.to_s }
+    end
+
+    def add_model model
+      @models ||= []
+      @models << model
     end
 
   end

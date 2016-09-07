@@ -154,6 +154,7 @@ module Squares
       end
 
       def serializers
+        # someday this will be extensible
         [Marshal]
       end
 
@@ -281,15 +282,11 @@ module Squares
       end
 
       def store= storage
-        @store = storage
+        @_store = storage
       end
 
       def store
-        @store ||= {}
-      end
-
-      def models
-        (@_models || []).uniq.sort { |a,b| a.to_s <=> b.to_s }
+        @_store ||= {}
       end
 
       private
@@ -299,8 +296,7 @@ module Squares
       end
 
       def inherited(subclass)
-        @_models ||= []
-        @_models << subclass
+        Squares.add_model subclass
       end
 
       def deserialize item
