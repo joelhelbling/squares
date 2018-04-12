@@ -11,7 +11,7 @@ module Squares
       alias_method :all, :to_a
 
       def last
-        to_a.last
+        all.last
       end
 
       def serializers

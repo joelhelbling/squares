@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Squares do
   describe 'version number' do
-    Then { expect(Squares::VERSION).not_to be nil }
+    Then { expect(Squares::VERSION).not_to be_nil }
   end
 
   describe '.models' do
