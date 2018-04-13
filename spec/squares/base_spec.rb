@@ -510,6 +510,21 @@ module Squares
         Then { 'hooked' }
       end
 
+      describe 'another hook test' do
+        Given do
+          class Marvel::Sidekick < Squares::Base
+            after_create do
+              raise 'NOWAI!'
+              self.catch_phrase = 'Yess, master!'
+            end
+          end
+        end
+
+        When(:igor) { Marvel::Sidekick.create 'Igor' }
+
+        Then { igor.catch_phrase == 'Yess, master!' }
+      end
+
     end # instance methods
   end
 end
