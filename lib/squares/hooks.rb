@@ -48,7 +48,6 @@ module Squares
       end
 
       def after_create *args, &block
-        binding.pry
         add_hook :after_create, args, block
       end
 
